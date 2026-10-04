@@ -67,7 +67,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                bat 'docker compose -p campus-test -f docker-compose.test.yml up -d --build'
+                bat 'docker-compose -p campus-test -f docker-compose.test.yml up -d --build'
                 retry(12) {
                     sleep 5
                     bat 'curl -f http://localhost:3001/health'
@@ -75,7 +75,7 @@ pipeline {
             }
             post {
                 failure {
-                    bat 'docker compose -p campus-test -f docker-compose.test.yml down'
+                    bat 'docker-compose -p campus-test -f docker-compose.test.yml down'
                 }
             }
         }
@@ -90,7 +90,7 @@ pipeline {
 set "JWT_SECRET=%PROD_SECRET%"
 set "DB_PASSWORD=%PROD_SECRET%"
 set "ADMIN_PASSWORD=%PROD_SECRET%"
-docker compose -p campus-prod -f docker-compose.prod.yml up -d --build
+docker-compose -p campus-prod -f docker-compose.prod.yml up -d --build
 '''
                 retry(12) {
                     sleep 5
