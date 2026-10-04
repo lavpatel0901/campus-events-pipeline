@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: campusevents_test
+    volumes:
+      - test-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d campusevents_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    image: campus-events:${IMAGE_TAG:-latest}
+    build: .
+    ports:
+      - "3001:3000"
+    environment:
+      PORT: 3000
+      JWT_SECRET: test-environment-secret
+      DATABASE_URL: postgres://postgres:postgres@db:5432/campusevents_test
+      ADMIN_EMAIL: admin@campus.local
+      ADMIN_PASSWORD: Admin12345
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  test-db-data:
