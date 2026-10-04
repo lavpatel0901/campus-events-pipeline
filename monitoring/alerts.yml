@@ -1,0 +1,18 @@
+groups:
+  - name: campus-events
+    rules:
+      - alert: ApiDown
+        expr: up{job="campus-events-api"} == 0
+        for: 15s
+        labels:
+          severity: critical
+        annotations:
+          summary: "CampusEvents API is down"
+
+      - alert: HighServerErrors
+        expr: sum(increase(http_requests_total{status="500"}[1m])) > 3
+        for: 10s
+        labels:
+          severity: warning
+        annotations:
+          summary: "More than 3 server errors in the last minute"

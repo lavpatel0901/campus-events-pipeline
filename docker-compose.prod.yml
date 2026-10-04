@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: campus
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: campusevents
+    volumes:
+      - prod-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U campus -d campusevents" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    image: campus-events:${IMAGE_TAG}
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      JWT_SECRET: ${JWT_SECRET}
+      DATABASE_URL: postgres://campus:${DB_PASSWORD}@db:5432/campusevents
+      ADMIN_EMAIL: admin@campus.local
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  prometheus:
+    build: ./monitoring
+    ports:
+      - "9090:9090"
+    depends_on:
+      - api
+
+volumes:
+  prod-db-data:
